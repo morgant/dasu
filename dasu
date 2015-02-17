@@ -40,10 +40,12 @@ copyright='(c) 2015 Morgan T. Aldridge'
 
 # global variables
 verbose=false
+formats=()
 
 # print usage instructions (help)
 function usage() {
 	echo "Usage: $tool [options]"
+	echo '  -f, --format    output file format (tgz, tbz, zip)'
 	echo '  -h, --help      print these usage instructions'
 	echo '  -v, --verbose   verbose output'
 	echo '  -V, --version   print the version'
@@ -100,6 +102,14 @@ if [ $# -gt 0 ]; then
 		# is this an option (e.g. starts with a dash) or an argument?
 		if [ "${argv[$i]:0:1}" = "-" ]; then
 			case "${argv[$i]}" in
+				# see if the user specified an output archive format
+				"-f" | "--format")
+					if [[ "${argv[$i]}" =~ ^(tgz|tbz|zip)$ ]]; then
+						formats+=("${argv[$i]}")
+					else
+						echo "$tool: Unknown output format '${argv[$i]}'!"
+						exit 1
+					fi
 				# see if the user intended us to run in verbose mode
 				"-v" | "--verbose")
 					verbose=true
