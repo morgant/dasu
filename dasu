@@ -111,6 +111,7 @@ if [ $# -gt 0 ]; then
 			case "${argv[$i]}" in
 				# see if the user specified an output archive format
 				"-f" | "--format")
+					(( i++ ))
 					if [[ "${argv[$i]}" =~ ^(tgz|tbz|zip)$ ]]; then
 						formats+=("${argv[$i]}")
 					else
@@ -158,4 +159,3 @@ else
 	usage
 	exit 1
 fi
-
