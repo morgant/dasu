@@ -47,20 +47,83 @@ project_path=''
 
 # print usage instructions (help)
 function usage() {
-	echo "Usage: $tool [options] <version> <project>"
+	echo "Usage: $tool [options] <project> <version>"
 	echo '  -f, --format    output file format (tgz, tbz, zip)'
 	echo '  -h, --help      print these usage instructions'
 	echo '  -v, --verbose   verbose output'
 	echo '  -V, --version   print the version'
 	echo
 	echo 'Parameters:'
-	echo '  version         version string appended to file name'
 	echo '  project         project path to be packaged for release'
+	echo '  version         version string appended to file name'
 }
 
 # print version info
 function version() {
 	echo "$tool v$version $copyright"
+}
+
+# package up a project
+function package_project() {
+	local success=true
+	local project_path="$1"
+	local release="$2"
+	
+	local path="$(dirname "$project_path")"
+	local project="$(basename "$project_path")"
+	
+	# is this a git repository
+	local count="$(find "$project_path" -name ".git" | wc -l)"
+	if (( count > 0 )); then
+		# exclude '.git' directories
+		exclusions+=(".git")
+	fi
+	
+	# is this a subversion repository
+	count="$(find "$project_path" -name ".svn" | wc -l)"
+	if (( count > 0 )); then
+		# exclude '.svn' directories
+		exclusions+=(".svn")
+	fi
+	
+	# build & run the rsync command (exclusions and all) to build the intermediary directory
+	local rsync_cmd=("rsync" "-vaE")
+	if (( ${#exclusions[@]} > 0 )); then
+		local exclusion=''
+		for exclusion in "${exclusions[@]}"; do
+			rsync_cmd+=("--exclude=$exclusion")
+		done
+	fi
+	rsync_cmd+=("${path}/${project}/")
+	rsync_cmd+=("./${project}-${release}/")
+	echo "${rsync_cmd[@]}"
+	
+	# for each archive format, build the archive
+	local format=''
+	for format in "${formats[@]}"; do
+		# determine the command & compression to use
+		local package_cmd=()
+		case "$format" in
+			"tgz")
+				package_cmd+=("tar" "czf" "./${project}-${release}.tar.gz" "./${project}-${release}")
+				;;
+			"tbz")
+				package_cmd+=("tar" "cjf" "./${project}-${release}.tar.bz2" "./${project}-${release}")
+				;;
+			"zip")
+				package_cmd+=("zip" "-r" "./${project}-${release}.zip" "./${project}-${release}")
+				;;
+		esac
+		
+		# run the command
+		echo "${package_cmd[@]}"
+	done
+	
+	# remove the intermediary directory
+	local rm_cmd=("rm" "-r" "./${project}-${release}")
+	echo "${rm_cmd[@]}"
+	
+	$success
 }
 
 # see if any arguments were passed in
@@ -145,9 +208,9 @@ if [ $# -gt 0 ]; then
 		else
 			# grab the version & project parameter arguments
 			if (( argc - i == 2 )); then
-				release_version="${argv[$i]}"
-				(( i++ ))
 				project_path="${argv[$i]}"
+				(( i++ ))
+				release_version="${argv[$i]}"
 			else
 				echo "$tool: Invalid number of arguments (two expected)!"
 				exit 1
@@ -159,3 +222,6 @@ else
 	usage
 	exit 1
 fi
+
+package_project "$project_path" "$release_version"
+
