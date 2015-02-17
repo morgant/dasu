@@ -72,6 +72,8 @@ function package_project() {
 	local path="$(dirname "$project_path")"
 	local project="$(basename "$project_path")"
 	
+	if $verbose; then echo -n "Determining files in '$project' to exclude... "; fi
+	
 	# is this a git repository
 	local count="$(find "$project_path" -name ".git" | wc -l)"
 	if (( count > 0 )); then
@@ -86,42 +88,58 @@ function package_project() {
 		exclusions+=(".svn")
 	fi
 	
+	if $verbose; then echo "Done."; fi
+	
 	# build & run the rsync command (exclusions and all) to build the intermediary directory
+	if $verbose; then echo -n "Cloning '$project' to ’${project}-${release}'"; fi
 	local rsync_cmd=("rsync" "-vaE")
 	if (( ${#exclusions[@]} > 0 )); then
+		if $verbose; then echo -n " (excluding"; fi
 		local exclusion=''
 		for exclusion in "${exclusions[@]}"; do
+			if $verbose; then echo -n " '$exclusion'"; fi
 			rsync_cmd+=("--exclude=$exclusion")
 		done
+		if $verbose; then echo -n ")... "; fi
 	fi
 	rsync_cmd+=("${path}/${project}/")
 	rsync_cmd+=("./${project}-${release}/")
 	echo "${rsync_cmd[@]}"
+	if $verbose; then echo "Done."; fi
 	
 	# for each archive format, build the archive
 	local format=''
 	for format in "${formats[@]}"; do
+		if $verbose; then echo -n "Packaging '${project}-${release}' into '${project}-${release}"; fi
+		
 		# determine the command & compression to use
 		local package_cmd=()
 		case "$format" in
 			"tgz")
+				if $verbose; then echo -n ".tar.gz"; fi
 				package_cmd+=("tar" "czf" "./${project}-${release}.tar.gz" "./${project}-${release}")
 				;;
 			"tbz")
+				if $verbose; then echo -n ".tar.bz2"; fi
 				package_cmd+=("tar" "cjf" "./${project}-${release}.tar.bz2" "./${project}-${release}")
 				;;
 			"zip")
+				if $verbose; then echo -n ".zip"; fi
 				package_cmd+=("zip" "-r" "./${project}-${release}.zip" "./${project}-${release}")
 				;;
 		esac
+		if $verbose; then echo -n "'... "; fi
 		
 		# run the command
 		echo "${package_cmd[@]}"
+		if $verbose; then echo "Done."; fi
 	done
 	
 	# remove the intermediary directory
+	if $verbose; then echo -n " Removing '${project}-${release}'... "; fi
 	local rm_cmd=("rm" "-r" "./${project}-${release}")
 	echo "${rm_cmd[@]}"
+	if $verbose; then echo "Done."; fi
 	
 	$success
 }
