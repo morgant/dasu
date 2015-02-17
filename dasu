@@ -41,14 +41,21 @@ copyright='(c) 2015 Morgan T. Aldridge'
 # global variables
 verbose=false
 formats=()
+exclusions=()
+release_version=''
+project_path=''
 
 # print usage instructions (help)
 function usage() {
-	echo "Usage: $tool [options]"
+	echo "Usage: $tool [options] <version> <project>"
 	echo '  -f, --format    output file format (tgz, tbz, zip)'
 	echo '  -h, --help      print these usage instructions'
 	echo '  -v, --verbose   verbose output'
 	echo '  -V, --version   print the version'
+	echo
+	echo 'Parameters:'
+	echo '  version         version string appended to file name'
+	echo '  project         project path to be packaged for release'
 }
 
 # print version info
@@ -110,6 +117,7 @@ if [ $# -gt 0 ]; then
 						echo "$tool: Unknown output format '${argv[$i]}'!"
 						exit 1
 					fi
+					;;
 				# see if the user intended us to run in verbose mode
 				"-v" | "--verbose")
 					verbose=true
@@ -133,8 +141,16 @@ if [ $# -gt 0 ]; then
 					;;
 			esac
 		# handle arguments
-		# else
-			# one would normally handle arguments here
+		else
+			# grab the version & project parameter arguments
+			if (( argc - i == 2 )); then
+				release_version="${argv[$i]}"
+				(( i++ ))
+				project_path="${argv[$i]}"
+			else
+				echo "$tool: Invalid number of arguments (two expected)!"
+				exit 1
+			fi
 		fi
 	done
 else
@@ -142,3 +158,4 @@ else
 	usage
 	exit 1
 fi
+
