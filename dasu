@@ -114,8 +114,12 @@ function package_project() {
 	fi
 	rsync_cmd+=("${path}/${project}/")
 	rsync_cmd+=("./${project}-${release}/")
-	echo "${rsync_cmd[@]}"
-	if $verbose; then echo "Done."; fi
+	if "${rsync_cmd[@]}"; then
+		if $verbose; then echo "Done."; fi
+	else
+		echo "ERROR! An error occurred while cloning '$project' to ’${project}-${release}'!"
+		success=false
+	fi
 	
 	# for each archive format, build the archive
 	local format=''
@@ -141,15 +145,23 @@ function package_project() {
 		if $verbose; then echo -n "'... "; fi
 		
 		# run the command
-		echo "${package_cmd[@]}"
-		if $verbose; then echo "Done."; fi
+		if "${package_cmd[@]}"; then
+			if $verbose; then echo "Done."; fi
+		else
+			echo "ERROR! An error occurred while packaging '${project}-${release}' into '$formal' format!"
+			success=false
+		fi
 	done
 	
 	# remove the intermediary directory
 	if $verbose; then echo -n "Removing '${project}-${release}'... "; fi
 	local rm_cmd=("rm" "-r" "./${project}-${release}")
-	echo "${rm_cmd[@]}"
-	if $verbose; then echo "Done."; fi
+	if "${rm_cmd[@]}"; then
+		if $verbose; then echo "Done."; fi
+	else
+		echo "ERROR! An error occurred while removing '${project}-${release}'!"
+		success=false
+	fi
 	
 	$success
 }
