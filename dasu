@@ -72,6 +72,16 @@ function package_project() {
 	local path="$(dirname "$project_path")"
 	local project="$(basename "$project_path")"
 	
+	# bail if the project doesn't exist or the destination already exists
+	if [ ! -d "${path}/${project}" ]; then
+		echo "$tool: Project '$project_path' doesn't exist or is not a directory!"
+		exit 1
+	fi
+	if [ -e "./${project}-${release}" ]; then
+		echo "$tool: Intermediary directory '${project}-${release}' already exists!"
+		exit 1
+	fi
+	
 	if $verbose; then echo -n "Determining files in '$project' to exclude... "; fi
 	
 	# is this a git repository
@@ -136,7 +146,7 @@ function package_project() {
 	done
 	
 	# remove the intermediary directory
-	if $verbose; then echo -n " Removing '${project}-${release}'... "; fi
+	if $verbose; then echo -n "Removing '${project}-${release}'... "; fi
 	local rm_cmd=("rm" "-r" "./${project}-${release}")
 	echo "${rm_cmd[@]}"
 	if $verbose; then echo "Done."; fi
