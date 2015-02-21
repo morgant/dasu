@@ -52,6 +52,7 @@ function usage() {
 	echo '  -h, --help      print these usage instructions'
 	echo '  -v, --verbose   verbose output'
 	echo '  -V, --version   print the version'
+	echo '  -x, --exclude   file/path to exclude'
 	echo
 	echo 'Parameters:'
 	echo '  project         project path to be packaged for release'
@@ -221,6 +222,11 @@ if [ $# -gt 0 ]; then
 						echo "$tool: Unknown output format '${argv[$i]}'!"
 						exit 1
 					fi
+					;;
+				# see if the user specified file to be excluded
+				"-x" | "--exclude")
+					(( i++ ))
+					exclusions+=("${argv[$i]}")
 					;;
 				# see if the user intended us to run in verbose mode
 				"-v" | "--verbose")
