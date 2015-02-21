@@ -89,7 +89,7 @@ function package_project() {
 	local count="$(find "$project_path" -name ".git" | wc -l)"
 	if (( count > 0 )); then
 		# exclude '.git' directories
-		exclusions+=(".git")
+		exclusions+=(".git" ".gitignore")
 	fi
 	
 	# is this a subversion repository
