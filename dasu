@@ -102,7 +102,7 @@ function package_project() {
 	if $verbose; then echo "Done."; fi
 	
 	# build & run the rsync command (exclusions and all) to build the intermediary directory
-	if $verbose; then echo -n "Cloning '$project' to ’${project}-${release}'"; fi
+	if $verbose; then echo -n "Cloning '$project' to '${project}-${release}'"; fi
 	local rsync_cmd=("rsync" "-vaE")
 	if (( ${#exclusions[@]} > 0 )); then
 		if $verbose; then echo -n " (excluding"; fi
@@ -121,6 +121,15 @@ function package_project() {
 		echo "ERROR! An error occurred while cloning '$project' to ’${project}-${release}'!"
 		success=false
 	fi
+	
+	# I use The Coding Monkeys's SubEthaEdit, which stores per-document
+	# settings in extended attributes, so I strip those off, just in case
+	# 
+	# Note: OS X 10.7+'s xattr supports the '-r' (recursive) version, but
+	# 10.5 (probably others) doesn't, so I've worked around that using find
+	if $verbose; then echo -n "Stripping SubEthaEdit xattrs from '${project}-${release}'... "; fi
+	find "./${project}-${release}" -exec xattr -d de.codingmonkeys.seestate {} + > /dev/null 2>&1
+	if $verbose; then echo "Done."; fi
 	
 	# for each archive format, build the archive
 	local format=''
