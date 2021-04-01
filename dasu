@@ -7,10 +7,12 @@
 # 
 # v0.1   2015-02-24 - Morgan Aldridge <morgant@makkintosshu.com>
 #                     Initial version, based on bash_stub.
+# v0.2   2021-04-01 - Morgan Aldridge
+#                     Use more portable path to bash.
 # 
 # LICENSE:
 # 
-# Copyright (c) 2015, Morgan Aldridge. All rights reserved.
+# Copyright (c) 2021, Morgan Aldridge. All rights reserved.
 # 
 # Redistribution and use in source and binary forms, with or without 
 # modification, are permitted provided that the following conditions are met:
@@ -35,8 +37,8 @@
 
 # info
 tool=$(basename "$0")
-version='0.1'
-copyright='(c) 2015 Morgan T. Aldridge'
+version='0.2'
+copyright='(c) 2021 Morgan T. Aldridge'
 
 # global variables
 verbose=false
